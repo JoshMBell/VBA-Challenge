@@ -1,0 +1,91 @@
+Sub StockAnalysis()
+    'DIm variables that will be needed
+    Dim T1LastRow As Long
+    Dim Ticker As String
+    Dim YearOpen As Double
+    Dim YearClose As Double
+    Dim TotalVolume As LongLong
+    Dim WS_Count As Integer
+    Dim WS As Worksheet
+    Dim MaxValue As Double
+    Dim MinValue As Double
+    
+    'Loop through each worksheet
+    For Each WS In Worksheets
+        'Initial formatting of table that we will write data to.
+        WS.Cells(1, 9).Value = "Ticker"
+        WS.Cells(1, 10).Value = "Yearly Change"
+        WS.Cells(1, 11).Value = "Percent Change"
+        WS.Cells(1, 12).Value = "Total Stock Volume"
+        Range("I1:L1").Font.Bold = True
+        'Collect important information for first ticker, work out how many times we will need to loop through the list ("T1LastRow")
+        YearOpen = WS.Cells(2, 3).Value
+        Ticker = WS.Cells(2, 1).Value
+        T1LastRow = WS.Cells(Rows.Count, 1).End(xlUp).Row
+        TotalVolume = 0
+        
+        'iterate through each row
+        For i = 2 To T1LastRow
+             'test where the end of the tickers values are (this can be changed to look at date if needed, but works fine for this assignement
+            If WS.Cells(i + 1, 1).Value <> WS.Cells(i, 1).Value Then
+                'At the end of the year, calculate where to write in new table "T2LastRow", and print necessary info to the table
+                T2LastRow = WS.Cells(Rows.Count, 9).End(xlUp).Row
+                YearClose = WS.Cells(i, 6).Value
+                TotalVolume = TotalVolume + WS.Cells(i, 7).Value
+                WS.Cells(T2LastRow + 1, 9).Value = Ticker
+                WS.Cells(T2LastRow + 1, 10).Value = YearClose - YearOpen
+                'Formatting for yearly change
+                If WS.Cells(T2LastRow + 1, 10).Value < 0 Then
+                    WS.Cells(T2LastRow + 1, 10).Interior.ColorIndex = 3
+                ElseIf WS.Cells(T2LastRow + 1, 10).Value > 0 Then
+                    WS.Cells(T2LastRow + 1, 10).Interior.ColorIndex = 4
+                End If
+                'finish calculating needed information and set Total vol back to 0, store variables for the next ticker.
+                WS.Cells(T2LastRow + 1, 11).Value = (WS.Cells(T2LastRow + 1, 10).Value / YearOpen) '*100 if needed
+                WS.Cells(T2LastRow + 1, 12).Value = TotalVolume
+                TotalVolume = 0
+                YearOpen = WS.Cells(i + 1, 3).Value
+                Ticker = WS.Cells(i + 1, 1).Value
+                'if not at the end of the ticker, continue adding volume to TotalVolume
+            Else: TotalVolume = TotalVolume + WS.Cells(i, 7).Value
+           
+            End If
+            
+        Next i
+        'Print data for bonus activity
+        WS.Cells(2, 15).Value = "Greatest % Increase"
+        WS.Cells(3, 15).Value = "Greatest % Decrease"
+        WS.Cells(4, 15).Value = "Greatest Total Volume"
+        WS.Cells(1, 16).Value = "Ticker"
+        WS.Cells(1, 17).Value = "Value"
+        
+        'loop through table to find the max and min values for percentage change, print to new table.
+        WS.Range("Q2:Q4").Value = 0
+        For j = 2 To T2LastRow
+            If WS.Cells(j, "K").Value > WS.Cells(2, 17).Value Then
+                MaxValue = WS.Cells(j, "K").Value
+                WS.Cells(2, 17).Value = MaxValue
+                WS.Cells(2, 16).Value = WS.Cells(j, "I").Value
+            ElseIf WS.Cells(j, "K").Value < WS.Cells(3, 17).Value Then
+                MinValue = WS.Cells(j, "K").Value
+                WS.Cells(3, 17).Value = MinValue
+                WS.Cells(3, 16).Value = WS.Cells(j, "I").Value
+            End If
+    
+            If WS.Cells(j, "L").Value > WS.Cells(4, "Q").Value Then
+                WS.Cells(4, "Q").Value = WS.Cells(j, "L").Value
+                WS.Cells(4, "P").Value = WS.Cells(j, "I").Value
+            End If
+        Next j
+        MaxValue = 0
+        MinValue = 0
+
+        'final polish/formatting of columns
+        WS.Range("K2:K" & T2LastRow).NumberFormat = "0.00%"
+        WS.Columns("I:L").AutoFit
+    
+        WS.Range("Q2:Q3").NumberFormat = "0.00%"
+        WS.Columns("O:Q").AutoFit
+    Next
+
+End Sub
