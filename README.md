@@ -1,6 +1,6 @@
 # VBA-Challenge Module 2
 
-To use this macro, summarise stock market data using exels built in stockhistory function in the format [<ticker>	<date>	<open>	<high>	<low>	<close>	<vol>]
+To use this macro, summarise stock market data using exels built in stockhistory function in the format: Ticker, date, open, high, low, close, vol.
 
 Paste the VBA code into excels visual basic window and run.
 
